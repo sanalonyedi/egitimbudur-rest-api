@@ -1,4 +1,5 @@
 export default {
     version : "v1",
-    jwtSecret : "sanalonyedi"
+    jwtSecret : "sanalonyedi",
+    passSecret : "sanalonyedi"
 }

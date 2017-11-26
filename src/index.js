@@ -1,6 +1,10 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import AuthRouter from './routes';
+import mongoose from 'mongoose';
+
+mongoose.connect('mongodb://ebdbuser:ebdbpassword@ds121336.mlab.com:21336/egitimbudur_db', { useMongoClient: true });
+mongoose.Promise = global.Promise;
 
 const app = express();
 

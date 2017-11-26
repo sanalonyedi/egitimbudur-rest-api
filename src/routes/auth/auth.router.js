@@ -1,10 +1,8 @@
 import express from 'express';
 import config from 'config';
 import jwt from 'jsonwebtoken';
-
-const users = [
-    { _id : "U123", firstName : 'melih', lastName: 'korkmaz', email :'melih@test.com', password : '123456' }
-]
+import crypto from 'crypto';
+import User from '../../models/User';
 
 
 const route = () => {
@@ -14,29 +12,55 @@ const route = () => {
 
         const { email, password } = req.body;
 
-        const user = users.find((user) => user.email === email);
+       User.findOne({ email : email}).then((user) => {
+           if(!user){
+               res.send({
+                   status : false,
+                   message : 'Böyle bir email adresi sistemde kayıtlı değil.'
+               })
+           }else{
+               if(user.password === crypto.createHmac('sha256', config.passSecret).update(password).digest('hex')){
+                   const token = jwt.sign({userId : user._id}, config.jwtSecret);
 
-        if(!user){
-            res.send({
-                status : false,
-                message : 'Böyle bir email adresi sistemde kayıtlı değil.'
-            })
-        }else{
-            if(user.password === password){
-                const token = jwt.sign({userId : user._id}, config.jwtSecret);
-                res.send({
-                    status : true,
-                    token : token
-                })
-            }else{
-                res.send({
-                    status : false,
-                    message : 'Hatalı şifre girdiniz.'
-                })
+                   User.update({email : email}, {
+                       $set : {
+                           lastLogin : new Date()
+                       }
+                   }).then(() => {});
+
+                   res.send({
+                       status : true,
+                       token : token
+                   })
+               }else{
+                   res.send({
+                       status : false,
+                       message : 'Hatalı şifre girdiniz.'
+                   })
+               }
+    
+           }
+       })
+
+    });
+
+
+    router.route('/sign-up').post( (req, res) => {
+        const { email , password } = req.body;
+        const newUser = new User({
+            email : email,
+            password : crypto.createHmac('sha256', config.passSecret).update(password).digest('hex')
+        });
+
+        newUser.save().then(
+            (data) => {
+                res.send({ status : true, user : data});
+            },
+            (err) => {
+                res.send({ status : false, error : err});
             }
-
-        }
-    })
+        )
+    });
 
     return router;
 }
