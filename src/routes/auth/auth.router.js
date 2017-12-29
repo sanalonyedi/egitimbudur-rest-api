@@ -51,7 +51,12 @@ const route = () => {
             email : email,
             password : crypto.createHmac('sha256', config.passSecret).update(password).digest('hex')
         });
+        newUser.validate((err, asd) => {
+            console.log("err", err);
+            console.log("asd", asd);
+        })
 
+        
         newUser.save().then(
             (data) => {
                 res.send({ status : true, user : data});
