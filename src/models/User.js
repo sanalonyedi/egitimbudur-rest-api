@@ -6,7 +6,7 @@ const userSchema = new Schema({
     firstName : String,
     lastName : String,
     email : {
-        type : Schema.Types.String,
+        type : String,
         unique : true,
         required : [true, 'Lütfen bir email adresi giriniz!']
     },
